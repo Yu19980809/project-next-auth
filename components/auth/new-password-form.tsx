@@ -1,14 +1,13 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 
-import { LoginSchema } from '@/schemas'
-import { login } from '@/actions/login'
+import { NewPasswordSchema } from '@/schemas'
+import { newPassword } from '@/actions/new-password'
 import { CardWrapper } from '@/components/auth/card-wrapper'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -23,32 +22,27 @@ import {
   FormMessage
 } from '@/components/ui/form'
 
-export const LoginForm = () => {
-  const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get('callbackUrl')
-  const urlError = searchParams.get('error') === 'OAuthAccountNotLinked'
-    ? 'Email already in use with different provider!'
-    : ''
-
-  const [showTwoFactor, setShowTwoFactor] = useState(false)
+export const NewPasswordForm = () => {
   const [error, setError] = useState<string | undefined>('')
   const [success, setSuccess] = useState<string | undefined>('')
   const [isPending, startTransition] = useTransition()
 
-  const form = useForm<z.infer<typeof LoginSchema>>({
-    resolver: zodResolver(LoginSchema),
+  const searchParams = useSearchParams()
+  const token = searchParams.get('token')
+
+  const form = useForm<z.infer<typeof NewPasswordSchema>>({
+    resolver: zodResolver(NewPasswordSchema),
     defaultValues: {
-      email: '',
       password: ''
     }
   })
 
-  const onSubmit = (values: z.infer<typeof LoginSchema>) => {
-    setError('')
+  const onSubmit = (values: z.infer<typeof NewPasswordSchema>) => {
     setSuccess('')
+    setError('')
 
     startTransition(() => {
-      login(values)
+      newPassword(values, token)
         .then(res => {
           setError(res?.error)
           setSuccess(res?.success)
@@ -58,10 +52,9 @@ export const LoginForm = () => {
 
   return (
     <CardWrapper
-      headerLabel="Welcome back"
-      backButtonLabel="Don't have an account?"
-      backButtonHref="/auth/register"
-      showSocial
+      headerLabel="Enter a new password"
+      backButtonLabel="Back to login page"
+      backButtonHref="/auth/login"
     >
       <Form {...form}>
         <form
@@ -69,27 +62,6 @@ export const LoginForm = () => {
           className="space-y-6"
         >
           <div className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-
-                  <FormControl>
-                    <Input
-                      type="email"
-                      disabled={isPending}
-                      placeholder="hello.example.com"
-                      {...field}
-                    />
-                  </FormControl>
-
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
             <FormField
               control={form.control}
               name="password"
@@ -107,23 +79,12 @@ export const LoginForm = () => {
                   </FormControl>
 
                   <FormMessage />
-
-                  <Button
-                    asChild
-                    variant="link"
-                    size="sm"
-                    className="px-0 font-normal"
-                  >
-                    <Link href="/auth/reset">
-                      Forgot password?
-                    </Link>
-                  </Button>
                 </FormItem>
               )}
             />
           </div>
 
-          <FormError message={error || urlError} />
+          <FormError message={error} />
           <FormSuccess message={success} />
 
           <Button
@@ -131,7 +92,7 @@ export const LoginForm = () => {
             type="submit"
             className="w-full"
           >
-            {showTwoFactor ? 'Confirm' : 'Login'}
+            Reset password
           </Button>
         </form>
       </Form>

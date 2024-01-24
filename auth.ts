@@ -1,8 +1,8 @@
 import NextAuth from 'next-auth'
 import { PrismaAdapter } from '@auth/prisma-adapter'
 import { UserRole } from '@prisma/client'
-import authConfig from '@/auth.config'
 
+import authConfig from '@/auth.config'
 import { db } from '@/lib/db'
 import { getUserById } from '@/lib/user-service'
 
@@ -12,6 +12,10 @@ export const {
   signIn,
   signOut
 } = NextAuth({
+  pages: {
+    signIn: '/auth/login',
+    error: '/auth/error',
+  },
   events: {
     async linkAccount({ user }) {
       await db.user.update({
@@ -25,15 +29,23 @@ export const {
     }
   },
   callbacks: {
-    // async signIn({ user }) {
-    //   const existingUser = await getUserById(user.id!)
+    async signIn({ user, account }) {
+      // Allow oAuth without email verification (google, github ...)
+      if (account?.provider !== 'credentials') {
+        return true
+      }
 
-    //   if (!existingUser || !existingUser.emailVerified) {
-    //     return false
-    //   }
+      const existingUser = await getUserById(user.id!)
 
-    //   return true
-    // },
+      // Prevent sign in without emaial verification
+      if (!existingUser || !existingUser.emailVerified) {
+        return false
+      }
+
+      // TODO: Add 2fa check
+
+      return true
+    },
     // async session({ session, token }) {
     //   if (token.sub && session.user) {
     //     session.user.id = token.sub
