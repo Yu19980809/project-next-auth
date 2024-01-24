@@ -34,17 +34,17 @@ export const {
 
     //   return true
     // },
-    async session({ session, token }) {
-      if (token.sub && session.user) {
-        session.user.id = token.sub
-      }
+    // async session({ session, token }) {
+    //   if (token.sub && session.user) {
+    //     session.user.id = token.sub
+    //   }
 
-      if (token.role && session.user) {
-        session.user.role = token.role as UserRole
-      }
+    //   if (token.role && session.user) {
+    //     session.user.role = token.role as UserRole
+    //   }
       
-      return session
-    },
+    //   return session
+    // },
     async jwt({ token }) {
       if (!token.sub) return token
 
