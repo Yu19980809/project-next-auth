@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { SessionProvider } from 'next-auth/react'
+
 import { auth } from '@/auth'
+import { Toaster } from 'sonner'
 
 import './globals.css'
 
@@ -24,6 +26,7 @@ export default async function RootLayout({
       <html lang="en">
         <body className={inter.className}>
           {children}
+          <Toaster position="top-center" />
         </body>
       </html>
     </SessionProvider>
